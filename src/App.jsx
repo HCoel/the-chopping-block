@@ -7,6 +7,7 @@ import Grid from './ui/Grid.jsx'
 import ProductForm from './ui/ProductForm.jsx'
 import ProductDetail from './ui/ProductDetail.jsx'
 import Settings from './ui/Settings.jsx'
+import BackupSheet from './ui/BackupSheet.jsx'
 
 export default function App() {
   const route = useRoute()
@@ -33,6 +34,7 @@ export default function App() {
   return (
     <InstallGate>
       {page}
+      <BackupSheet />
       <UpdatePrompt />
       <Toasts />
     </InstallGate>

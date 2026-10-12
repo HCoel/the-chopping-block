@@ -75,8 +75,11 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   // Full backup from Settings
   await page.getByRole('link', { name: 'Settings' }).click()
   await expect(page.getByRole('button', { name: 'Back up changes' })).toBeDisabled()
-  let download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Full backup' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Backup ready' })
+  await expect(sheet.getByRole('button', { name: 'Share' })).toHaveCount(0)
+  let download = page.waitForEvent('download')
+  await sheet.getByRole('button', { name: 'Save to device' }).click()
   const full = await download
   expect(full.suggestedFilename()).toMatch(/^the-chopping-block-full-\d{4}-\d{2}-\d{2}-\d{4}\.zip$/)
   await expect(page.getByText('Last full backup: today')).toBeVisible()
@@ -94,8 +97,9 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   await page.getByRole('link', { name: 'Back' }).click()
   await page.getByRole('link', { name: 'Settings' }).click()
   await expect(page.getByText('1 change since the last backup')).toBeVisible()
-  download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Back up changes' }).click()
+  download = page.waitForEvent('download')
+  await sheet.getByRole('button', { name: 'Save to device' }).click()
   const incr = await download
   expect(incr.suggestedFilename()).toMatch(/^the-chopping-block-incr-.*\.zip$/)
   const incrPath = testInfo.outputPath(incr.suggestedFilename())

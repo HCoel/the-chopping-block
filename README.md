@@ -22,7 +22,10 @@ Each axe has three photo slots: **Profile** (the cover), **Stamp** (kept at high
 
 ## Backups
 
-Removing the app from the home screen deletes its data. Back up to Google Drive (Android) or iCloud Drive (iPhone) through the share sheet.
+Removing the app from the home screen deletes its data. Tap a backup button, then in the "Backup ready" sheet:
+
+- **iPhone:** Share > Save to Files > iCloud Drive, or Save to device (lands in Files > Downloads, iCloud Drive by default).
+- **Android:** Save to device, then Google Drive app > + > Upload > pick it from Downloads. (Chrome refuses to share .zip files, so the Share button may not appear or may fail.)
 
 - **Full backup**: everything. Do one first, then at least every 60 days.
 - **Back up changes**: only what changed since the last backup. Small and quick; do it after each session of adding axes.
@@ -46,7 +49,8 @@ Android (Chrome) is the main device; repeat the starred items on iPhone (Safari)
 - [ ] ★ Airplane mode: app opens and data shows
 - [ ] ★ Add an axe with camera photos in all three slots; stamp photo zooms full screen
 - [ ] Settings shows "Storage: Persistent"
-- [ ] ★ Full backup via share sheet to Google Drive / iCloud Drive; banner clears
+- [ ] ★ Full backup: Share (iPhone) or Save to device + Drive upload (Android) works; banner clears
+- [ ] If Share fails, the sheet shows the error and Save to device still works
 - [ ] Edit an axe, "Back up changes": file is small and named `...-incr-...`
 - [ ] Cancelling the share sheet does not count as a backup
 - [ ] Restore full + incr backups on a second browser/profile: everything returns, photos included
