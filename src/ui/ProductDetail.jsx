@@ -5,37 +5,39 @@ import { guard } from './toast.jsx'
 import { navigate } from './router.js'
 import { useLive } from './useLive.js'
 import PhotoView from './PhotoView.jsx'
-import UnitRow from './UnitRow.jsx'
-import UnitSheet from './UnitSheet.jsx'
+import { SLOT_LABELS } from './PhotoSlots.jsx'
+
+// Full screen; tap toggles between fit and 2.5x, where the photo pans by scrolling (for faint stamps)
+function Viewer({ id, label, onClose }) {
+  const [zoomed, setZoomed] = useState(false)
+  return (
+    <div class="viewer" role="dialog" aria-label={`${label} photo`}>
+      <button class="viewer-close" onClick={onClose}>Close</button>
+      <div class={`viewer-scroll${zoomed ? ' zoomed' : ''}`}>
+        <PhotoView id={id} class="viewer-img" alt={label} onClick={() => setZoomed(!zoomed)} />
+      </div>
+      <p class="muted viewer-hint">Tap to {zoomed ? 'fit' : 'zoom'}</p>
+    </div>
+  )
+}
 
 export default function ProductDetail({ id }) {
   const product = useLive(() => repo.getProduct(id), [id], null)
-  const units = useLive(() => repo.listUnits(id), [id], [])
-  const library = product?.library
-  const presets = useLive(() => (library ? repo.listPresets(library) : {}), [library], {})
-  const [showArchived, setShowArchived] = useState(false)
-  const [openUnitId, setOpenUnitId] = useState(null)
+  const thumbs = useLive(() => repo.listThumbs(id), [id], [])
+  const [open, setOpen] = useState(null)
 
   if (product === null) return null
-  if (!product) return <><header class="bar"><a class="btn" href="#/">Back</a></header><p>Product not found.</p></>
+  if (!product) return <><header class="bar"><a class="btn" href="#/">Back</a></header><p>Axe not found.</p></>
 
   const lib = getLibrary(product.library)
-  const cap = lib.capOf(product)
-  const preset = presets[product.fields[lib.preset_key]] ?? {}
-  const numbered = [...units].sort((a, b) => a.created_at.localeCompare(b.created_at)).map((u, i) => ({ u, n: i + 1 }))
-  const active = numbered.filter(x => !x.u.archived)
-  const archived = numbered.filter(x => x.u.archived)
-  const open = numbered.find(x => x.u.id === openUnitId)
-  const unitWord = lib.unit_label.toLowerCase()
   const DetailInfo = lib.DetailInfo
+  const opened = thumbs.find(t => t.id === open)
 
   async function remove() {
-    if (!confirm(`Delete ${product.name} and all its ${unitWord}s?`)) return
+    if (!confirm(`Delete ${product.name}? This also removes its photos.`)) return
     const ok = await guard(async () => { await repo.deleteProduct(id); return true })
     if (ok) navigate('/')
   }
-
-  const row = ({ u, n }) => <UnitRow key={u.id} lib={lib} cap={cap} unit={u} n={n} onOpen={() => setOpenUnitId(u.id)} />
 
   return (
     <>
@@ -43,27 +45,24 @@ export default function ProductDetail({ id }) {
         <a class="btn" href="#/">Back</a>
         <h1>{product.name}</h1>
       </header>
-      <div class="row" style="align-items:center">
-        <div style="flex:0 0 auto"><lib.Visual product={product} size={96} /></div>
-        {product.photo_id && <PhotoView id={product.photo_id} alt={product.name} />}
-      </div>
-      <DetailInfo product={product} preset={preset} />
-      {product.notes && <p>{product.notes}</p>}
-      <h2>{lib.unit_label}s ({active.length})</h2>
-      {active.map(row)}
-      <button onClick={() => guard(() => repo.addUnit(id))}>＋ Add {unitWord}</button>
-      {archived.length > 0 && (
-        <div class="row">
-          <button aria-pressed={showArchived} onClick={() => setShowArchived(!showArchived)}>Show archived ({archived.length})</button>
+      {thumbs.length > 0 && (
+        <div class="carousel">
+          {thumbs.map(t => (
+            <figure key={t.id}>
+              <PhotoView id={t.id} alt={`${SLOT_LABELS[t.slot]} photo`} onClick={() => setOpen(t.id)} />
+              <figcaption class="muted">{SLOT_LABELS[t.slot]}</figcaption>
+            </figure>
+          ))}
         </div>
       )}
-      {showArchived && archived.map(row)}
+      <DetailInfo product={product} />
+      {product.notes && <><h3>Notes</h3><p class="notes">{product.notes}</p></>}
       <div class="row">
         <a class="btn" href={`#/edit/${id}`}>Edit</a>
         <a class="btn" href={`#/new/${id}`}>Duplicate</a>
         <button class="danger" onClick={remove}>Delete</button>
       </div>
-      {open && <UnitSheet key={open.u.id} lib={lib} cap={cap} unit={open.u} n={open.n} onClose={() => setOpenUnitId(null)} />}
+      {opened && <Viewer id={opened.id} label={SLOT_LABELS[opened.slot]} onClose={() => setOpen(null)} />}
     </>
   )
 }

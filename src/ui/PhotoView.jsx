@@ -2,14 +2,28 @@ import { useEffect, useState } from 'preact/hooks'
 import { repo } from '../store.js'
 import { useLive } from './useLive.js'
 
-export default function PhotoView({ id, alt = '' }) {
-  const photo = useLive(() => repo.getPhoto(id), [id], null)
+export function useBlobUrl(record) {
   const [url, setUrl] = useState(null)
   useEffect(() => {
-    if (!photo) return undefined
-    const u = URL.createObjectURL(new Blob([photo.data], { type: photo.type }))
+    if (!record?.data) {
+      setUrl(null)
+      return undefined
+    }
+    const u = URL.createObjectURL(new Blob([record.data], { type: record.type }))
     setUrl(u)
     return () => URL.revokeObjectURL(u)
-  }, [photo])
-  return url ? <img class="photo" src={url} alt={alt} /> : null
+  }, [record])
+  return url
+}
+
+export default function PhotoView({ id, alt = '', class: cls = 'photo', onClick }) {
+  const photo = useLive(() => repo.getPhoto(id), [id], null)
+  const url = useBlobUrl(photo)
+  return url ? <img class={cls} src={url} alt={alt} onClick={onClick} /> : <div class={`${cls} placeholder`} />
+}
+
+export function ThumbView({ id, alt = '' }) {
+  const thumb = useLive(() => repo.getThumb(id), [id], null)
+  const url = useBlobUrl(thumb)
+  return url ? <img class="thumb" src={url} alt={alt} /> : <div class="thumb placeholder" />
 }

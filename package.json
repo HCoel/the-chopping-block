@@ -1,5 +1,5 @@
 {
-  "name": "spool-library",
+  "name": "the-chopping-block",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "dexie": "^4.4.6",
+    "fflate": "^0.8.3",
     "preact": "^11.0.1"
   },
   "devDependencies": {

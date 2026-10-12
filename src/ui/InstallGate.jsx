@@ -6,6 +6,8 @@ export function isStandalone() {
   return navigator.standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true
 }
 
+const isAndroid = () => /android/i.test(navigator.userAgent)
+
 function wasDismissed() {
   try {
     return sessionStorage.getItem(KEY) === '1'
@@ -28,12 +30,22 @@ export default function InstallGate({ children }) {
   return (
     <div class="gate">
       <h1>Add to Home Screen</h1>
-      <p>Spool Library keeps your data on this phone. Safari tabs and home-screen apps store data separately, so install it first:</p>
-      <ol>
-        <li>Tap the Share button (square with an arrow).</li>
-        <li>Choose <b>Add to Home Screen</b>.</li>
-        <li>Open Spool Library from your home screen.</li>
-      </ol>
+      <p>The Chopping Block keeps your collection on this phone. Install it first so it opens like an app and keeps its data:</p>
+      {isAndroid()
+        ? (
+          <ol>
+            <li>Tap the Chrome menu (⋮, top right).</li>
+            <li>Choose <b>Add to Home screen</b> or <b>Install app</b>.</li>
+            <li>Open The Chopping Block from your home screen.</li>
+          </ol>
+        )
+        : (
+          <ol>
+            <li>Tap the Share button (square with an arrow).</li>
+            <li>Choose <b>Add to Home Screen</b>.</li>
+            <li>Open The Chopping Block from your home screen.</li>
+          </ol>
+        )}
       <button onClick={dismiss}>Use in browser anyway</button>
     </div>
   )

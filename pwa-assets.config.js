@@ -1,7 +1,7 @@
 import { defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/config'
 
-// Full-bleed slate background: iOS and Android round the corners themselves
-const background = '#1d2024'
+// Full-bleed charcoal background: iOS and Android round the corners themselves
+const background = '#1b1d1f'
 
 export default defineConfig({
   preset: {

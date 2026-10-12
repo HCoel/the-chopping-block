@@ -1,6 +1,6 @@
-import filament from './filament/index.js'
+import axe from './axe/index.js'
 
-export const LIBRARIES = [filament]
+export const LIBRARIES = [axe]
 
 export function getLibrary(id) {
   return LIBRARIES.find(l => l.id === id)

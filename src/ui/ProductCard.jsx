@@ -1,11 +1,17 @@
-export default function ProductCard({ lib, row }) {
-  const { product, units, activeCount } = row
-  const Visual = lib.Visual
+import { repo } from '../store.js'
+import { useLive } from './useLive.js'
+import { ThumbView } from './PhotoView.jsx'
+import AxeSilhouette from './AxeSilhouette.jsx'
+
+export default function ProductCard({ lib, product }) {
+  const thumbs = useLive(() => repo.listThumbs(product.id), [product.id], [])
+  const cover = thumbs[0]
+  const faded = ['sold', 'wishlist'].includes(product.fields.collection_status)
   return (
-    <a class={`tile${activeCount === 0 ? ' dim' : ''}`} href={`#/p/${product.id}`} aria-label={product.name}>
-      <Visual product={product} size={64} />
-      <strong>{product.fields.color_name || product.name}</strong>
-      <span class="muted">{lib.summary(product, units)}</span>
+    <a class={`tile${faded ? ' dim' : ''}`} href={`#/p/${product.id}`} aria-label={product.name}>
+      {cover ? <ThumbView id={cover.id} alt="" /> : <AxeSilhouette />}
+      <strong>{product.name}</strong>
+      <span class="muted">{lib.summary(product)}</span>
     </a>
   )
 }

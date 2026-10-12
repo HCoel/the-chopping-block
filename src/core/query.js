@@ -1,19 +1,8 @@
-import { isActive, productRemaining } from './amount.js'
-
-export function groupUnits(units) {
-  const map = new Map()
-  for (const u of units) {
-    if (u.deleted) continue
-    if (!map.has(u.product_id)) map.set(u.product_id, [])
-    map.get(u.product_id).push(u)
-  }
-  return map
-}
-
 export function matchesSearch(product, search) {
   const q = (search ?? '').trim().toLowerCase()
   if (!q) return true
-  return [product.name, product.brand, product.fields?.color_name, product.notes]
+  const f = product.fields ?? {}
+  return [product.name, product.notes, f.maker, f.stamp_text, f.pattern, f.country, f.era, f.location, f.found_where]
     .some(v => (v ?? '').toLowerCase().includes(q))
 }
 
@@ -24,11 +13,7 @@ export function matchesFilters(product, lib, filters) {
   })
 }
 
-const byName = (a, b) => a.product.name.localeCompare(b.product.name)
-const COMPARATORS = {
-  name: byName,
-  remaining: (a, b) => a.remaining - b.remaining || byName(a, b),
-}
+const byName = (a, b) => a.name.localeCompare(b.name)
 
 // Numbers ascending; strings A-Z with blanks last
 function compareValues(a, b) {
@@ -40,27 +25,18 @@ function compareValues(a, b) {
 }
 
 function comparatorFor(lib, sort) {
-  if (COMPARATORS[sort]) return COMPARATORS[sort]
   const s = lib.sorts?.find(x => x.key === sort)
   if (!s) return byName
-  return (a, b) => compareValues(s.get(a.product), s.get(b.product)) || byName(a, b)
+  return (a, b) => compareValues(s.get(a), s.get(b)) || byName(a, b)
 }
 
-export function queryProducts(products, unitsByProduct, lib, { search = '', filters = {}, sort = 'name', showArchived = false } = {}) {
-  const rows = products
+export function queryProducts(products, lib, { search = '', filters = {}, sort = 'name' } = {}) {
+  return products
     .filter(p => !p.deleted && matchesSearch(p, search) && matchesFilters(p, lib, filters))
-    .map(product => {
-      const all = unitsByProduct.get(product.id) ?? []
-      const active = all.filter(isActive)
-      return {
-        product,
-        units: showArchived ? all : active,
-        activeCount: active.length,
-        archivedOnly: active.length === 0 && all.length > 0,
-        remaining: productRemaining(all, lib.capOf(product)),
-      }
-    })
-    .filter(r => showArchived || !r.archivedOnly)
-  const cmp = comparatorFor(lib, sort)
-  return rows.sort((a, b) => (a.activeCount === 0) - (b.activeCount === 0) || cmp(a, b))
+    .sort(comparatorFor(lib, sort))
+}
+
+// Facet options may be fixed or derived from the data (e.g. makers actually in the collection)
+export function facetOptions(facet, products) {
+  return typeof facet.options === 'function' ? facet.options(products) : facet.options
 }
