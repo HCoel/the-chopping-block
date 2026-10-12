@@ -1,5 +1,5 @@
-/* Forged steel: charcoal and worn steel with a copper accent, always dark. --on-accent is text on accent fills */
-:root { --bg:#1b1d1f; --card:#26292c; --text:#e8e4dc; --muted:#a19e98; --accent:#d08a52; --on-accent:#2a1a0e; --danger:#f47c7c; --border:#34383c; color-scheme: dark; }
+/* Emerald dark: green-tinted charcoal with a classic emerald accent, always dark. --on-accent is text on accent fills */
+:root { --bg:#0e1311; --card:#17201c; --text:#e6ece8; --muted:#98a69e; --accent:#2ebd85; --on-accent:#03231a; --danger:#ff8080; --border:#25312b; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font:16px/1.4 -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color:transparent; }
 #app { min-height:100dvh; padding:0 16px calc(24px + env(safe-area-inset-bottom)); }

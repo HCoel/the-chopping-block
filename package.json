@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "icons": "pwa-assets-generator"
+    "icons": "pwa-assets-generator && node scripts/maskable.mjs"
   },
   "dependencies": {
     "dexie": "^4.4.6",
