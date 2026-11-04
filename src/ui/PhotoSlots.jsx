@@ -32,28 +32,31 @@ export default function PhotoSlots({ existing, changes, onChange }) {
   }
 
   return (
-    <div class="slots">
-      {SLOTS.map(slot => {
-        const change = changes[slot]
-        const hasPhoto = change ? true : change === null ? false : Boolean(existing[slot])
-        const label = SLOT_LABELS[slot]
-        return (
-          <div class="slot" key={slot}>
-            <label class="slot-pick">
-              {busy === slot
-                ? <div class="thumb placeholder">…</div>
-                : change
-                  ? <PendingThumb thumb={change.thumb} />
-                  : hasPhoto
-                    ? <ThumbView id={existing[slot]} />
-                    : <div class="thumb placeholder">＋</div>}
-              <span>{label}{slot === 'stamp' ? ' ★' : ''}</span>
-              <input type="file" accept="image/*" hidden aria-label={`${label} photo`} onChange={e => pick(slot, e)} />
-            </label>
-            {hasPhoto && <button type="button" class="slot-remove" aria-label={`Remove ${label.toLowerCase()} photo`} onClick={() => onChange({ [slot]: null })}>×</button>}
-          </div>
-        )
-      })}
-    </div>
+    <>
+      <div class="slots">
+        {SLOTS.map(slot => {
+          const change = changes[slot]
+          const hasPhoto = change ? true : change === null ? false : Boolean(existing[slot])
+          const label = SLOT_LABELS[slot]
+          return (
+            <div class="slot" key={slot}>
+              <label class="slot-pick">
+                {busy === slot
+                  ? <div class="thumb placeholder">…</div>
+                  : change
+                    ? <PendingThumb thumb={change.thumb} />
+                    : hasPhoto
+                      ? <ThumbView id={existing[slot]} />
+                      : <div class="thumb placeholder">＋</div>}
+                <span>{label}{slot === 'stamp' ? ' ★' : ''}</span>
+                <input type="file" accept="image/*" hidden aria-label={`${label} photo`} onChange={e => pick(slot, e)} />
+              </label>
+              {hasPhoto && <button type="button" class="slot-remove" aria-label={`Remove ${label.toLowerCase()} photo`} onClick={() => onChange({ [slot]: null })}>×</button>}
+            </div>
+          )
+        })}
+      </div>
+      <p class="muted slots-tip">Tip: shoot landscape, axe side-on, so it fills the frame.</p>
+    </>
   )
 }

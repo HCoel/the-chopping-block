@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import { db, isPersisted, repo } from '../store.js'
+import { db, isPersisted, repo, upgradeThumbs } from '../store.js'
 import { ImportError, TABLES, applyImport, mergeBackups, planImport, readBackup } from '../core/export.js'
 import { daysSince, needsBackup, needsFullBackup } from '../core/reminder.js'
 import { runBackup } from './backupActions.js'
@@ -75,6 +75,7 @@ export default function Settings({ lib }) {
     if (ok) {
       toast('Backup imported')
       setPending(null)
+      upgradeThumbs()
     }
   }
 

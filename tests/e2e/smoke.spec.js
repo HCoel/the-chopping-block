@@ -11,14 +11,16 @@ test.beforeEach(async ({ page }) => {
 })
 
 // A real JPEG made by the browser, so the app's decode/resize path runs for real
-async function makeJpeg(page, color) {
-  const b64 = await page.evaluate(c => {
-    const canvas = Object.assign(document.createElement('canvas'), { width: 800, height: 600 })
+// iPhone-sized by default (4032x3024 landscape); pass portrait for 3024x4032
+async function makeJpeg(page, color, { portrait = false } = {}) {
+  const [w, h] = portrait ? [3024, 4032] : [4032, 3024]
+  const b64 = await page.evaluate(([c, width, height]) => {
+    const canvas = Object.assign(document.createElement('canvas'), { width, height })
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = c
-    ctx.fillRect(0, 0, 800, 600)
+    ctx.fillRect(0, 0, width, height)
     return canvas.toDataURL('image/jpeg').split(',')[1]
-  }, color)
+  }, [color, w, h])
   return { name: `${color.slice(1)}.jpg`, mimeType: 'image/jpeg', buffer: Buffer.from(b64, 'base64') }
 }
 
@@ -36,7 +38,7 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   await page.getByRole('link', { name: 'Add axe' }).click()
   await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled()
   await page.getByLabel('Profile photo').setInputFiles(await makeJpeg(page, '#aa5533'))
-  await page.getByLabel('Stamp photo').setInputFiles(await makeJpeg(page, '#3355aa'))
+  await page.getByLabel('Stamp photo').setInputFiles(await makeJpeg(page, '#3355aa', { portrait: true }))
   await page.getByLabel('Extra photo').setInputFiles(await makeJpeg(page, '#33aa55'))
   await expect(page.getByRole('button', { name: 'Remove extra photo' })).toBeVisible()
   await page.getByLabel('Maker').fill('Plumb')
@@ -63,7 +65,10 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   // Grid shows a thumbnail; pattern filter
   await page.getByRole('link', { name: 'Back' }).click()
   const tile = page.getByRole('link', { name: 'Plumb Dayton' })
-  await expect(tile.locator('img.thumb')).toBeVisible()
+  const cover = tile.locator('img.thumb')
+  await expect(cover).toBeVisible()
+  // Sharp enough for a 3x screen, and the whole 4:3 photo is kept (no square crop in the stored thumb)
+  expect(await cover.evaluate(img => [img.naturalWidth, img.naturalHeight])).toEqual([640, 480])
   await expect(tile).toContainText('3 lb 8 oz · as found')
   await expect(page.getByRole('alert')).toContainText('Never backed up')
   await page.getByText('Filters').click()
@@ -85,6 +90,10 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   await expect(page.getByText('Last full backup: today')).toBeVisible()
   const fullPath = testInfo.outputPath(full.suggestedFilename())
   await full.saveAs(fullPath)
+
+  // Relaunch (the thumbnail upgrade pass runs) must not count as changes for the next backup
+  await page.reload()
+  await expect(page.getByText('0 changes since the last backup')).toBeVisible()
 
   // A change, then an incremental backup holding only that change
   await page.getByRole('link', { name: 'Back' }).click()

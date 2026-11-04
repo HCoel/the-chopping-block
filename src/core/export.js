@@ -164,12 +164,14 @@ export async function planImport(db, data) {
 }
 
 export async function applyImport(db, plan) {
-  await db.transaction('rw', db.products, db.photos, db.thumbs, async () => {
+  await db.transaction('rw', db.products, db.photos, db.thumbs, db.meta, async () => {
     const w = plan.writes
     if (w.products?.length) await db.products.bulkPut(w.products)
     if (w.photos?.length) await db.photos.bulkPut(w.photos)
     if (w.deadThumbs?.length) await db.thumbs.bulkDelete(w.deadThumbs)
     if (w.thumbs?.length) await db.thumbs.bulkPut(w.thumbs)
+    // Older backups carry smaller thumbnails: let the upgrade pass look again
+    if (w.thumbs?.length) await db.meta.delete('thumb_edge')
   })
 }
 

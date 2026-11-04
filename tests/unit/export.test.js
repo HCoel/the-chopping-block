@@ -194,3 +194,11 @@ test('backupFilename uses local date and time, and the kind', () => {
   expect(backupFilename('full', d)).toBe('the-chopping-block-full-2026-10-12-0705.zip')
   expect(backupFilename('incremental', d)).toBe('the-chopping-block-incr-2026-10-12-0705.zip')
 })
+
+test('importing thumbnails clears the upgrade flag so older, smaller thumbs get rebuilt', async () => {
+  const { repo } = await populated()
+  const target = freshRepo()
+  await target.db.meta.put({ key: 'thumb_edge', value: 640 })
+  await restore(target, await backup(repo.db, { kind: 'full' }))
+  expect(await target.db.meta.get('thumb_edge')).toBeUndefined()
+})
