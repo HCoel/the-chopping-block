@@ -4,7 +4,7 @@ import { getLibrary } from '../libraries/index.js'
 import { guard } from './toast.jsx'
 import { navigate } from './router.js'
 import { useLive } from './useLive.js'
-import PhotoView from './PhotoView.jsx'
+import PhotoView, { PlainPhoto } from './PhotoView.jsx'
 import { SLOT_LABELS } from './PhotoSlots.jsx'
 
 // Full screen; tap toggles between fit and 2.5x, where the photo pans by scrolling (for faint stamps)
@@ -14,7 +14,7 @@ function Viewer({ id, label, onClose }) {
     <div class="viewer" role="dialog" aria-label={`${label} photo`}>
       <button class="viewer-close" onClick={onClose}>Close</button>
       <div class={`viewer-scroll${zoomed ? ' zoomed' : ''}`}>
-        <PhotoView id={id} class="viewer-img" alt={label} onClick={() => setZoomed(!zoomed)} />
+        <PlainPhoto id={id} class="viewer-img" alt={label} onClick={() => setZoomed(!zoomed)} />
       </div>
       <p class="muted viewer-hint">Tap to {zoomed ? 'fit' : 'zoom'}</p>
     </div>
@@ -49,7 +49,7 @@ export default function ProductDetail({ id }) {
         <div class="carousel">
           {thumbs.map(t => (
             <figure key={t.id}>
-              <PhotoView id={t.id} alt={`${SLOT_LABELS[t.slot]} photo`} onClick={() => setOpen(t.id)} />
+              <PhotoView id={t.id} slot={t.slot} alt={`${SLOT_LABELS[t.slot]} photo`} onClick={() => setOpen(t.id)} />
               <figcaption class="muted">{SLOT_LABELS[t.slot]}</figcaption>
             </figure>
           ))}

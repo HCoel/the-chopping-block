@@ -9,7 +9,7 @@ export default function ProductCard({ lib, product }) {
   const faded = ['sold', 'wishlist'].includes(product.fields.collection_status)
   return (
     <a class={`tile${faded ? ' dim' : ''}`} href={`#/p/${product.id}`} aria-label={product.name}>
-      {cover ? <ThumbView id={cover.id} alt="" /> : <AxeSilhouette />}
+      {cover ? <ThumbView id={cover.id} slot={cover.slot} alt="" /> : <AxeSilhouette />}
       <strong>{product.name}</strong>
       <span class="muted">{lib.summary(product)}</span>
     </a>

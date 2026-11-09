@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createDb } from '../../src/core/db.js'
 import { createRepo } from '../../src/core/repo.js'
-import { jpegSize, regenerateThumbs } from '../../src/core/thumbs.js'
+import { jpegSize, regenerateThumbs, shouldTurn } from '../../src/core/thumbs.js'
 
 // Minimal JPEG: SOI, an APP0 segment to skip over, then SOF0 with height/width
 function fakeJpeg(width, height) {
@@ -64,4 +64,18 @@ describe('regenerateThumbs', () => {
     expect(await regenerateThumbs(db, { edge: 640, makeThumb })).toBe(0)
     expect(makeThumb).not.toHaveBeenCalled()
   })
+})
+
+describe('shouldTurn', () => {
+  const portrait = { width: 480, height: 640 }
+  const landscape = { width: 640, height: 480 }
+  test.each([
+    ['profile', portrait, true],
+    ['extra', portrait, true],
+    ['stamp', portrait, false],
+    ['profile', landscape, false],
+    ['profile', { width: 500, height: 500 }, false],
+    ['profile', null, false],
+    [undefined, portrait, false],
+  ])('%s %o -> %s', (slot, size, expected) => expect(shouldTurn(slot, size)).toBe(expected))
 })

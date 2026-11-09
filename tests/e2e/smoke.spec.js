@@ -39,7 +39,7 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled()
   await page.getByLabel('Profile photo').setInputFiles(await makeJpeg(page, '#aa5533'))
   await page.getByLabel('Stamp photo').setInputFiles(await makeJpeg(page, '#3355aa', { portrait: true }))
-  await page.getByLabel('Extra photo').setInputFiles(await makeJpeg(page, '#33aa55'))
+  await page.getByLabel('Extra photo').setInputFiles(await makeJpeg(page, '#33aa55', { portrait: true }))
   await expect(page.getByRole('button', { name: 'Remove extra photo' })).toBeVisible()
   await page.getByLabel('Maker').fill('Plumb')
   await page.getByLabel('Pattern').selectOption('Dayton')
@@ -52,6 +52,10 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   await expect(page.getByRole('heading', { name: 'Plumb Dayton' })).toBeVisible()
   await expect(page.getByText('(partial)')).toBeVisible()
   await expect(page.locator('.carousel img')).toHaveCount(3)
+  // Portrait shots are turned side-on, except the stamp close-up
+  await expect(page.locator('.carousel img.turned')).toHaveCount(1)
+  await expect(page.getByAltText('Stamp photo')).not.toHaveClass(/turned/)
+  await expect(page.getByAltText('Extra photo')).toHaveClass(/turned/)
   await page.getByAltText('Stamp photo').click()
   await expect(page.getByRole('dialog', { name: 'Stamp photo' })).toBeVisible()
   await page.getByRole('button', { name: 'Close' }).click()
@@ -65,7 +69,7 @@ test('add with photos, filter, back up, restore into a fresh browser', async ({ 
   // Grid shows a thumbnail; pattern filter
   await page.getByRole('link', { name: 'Back' }).click()
   const tile = page.getByRole('link', { name: 'Plumb Dayton' })
-  const cover = tile.locator('img.thumb')
+  const cover = tile.locator('.thumb img')
   await expect(cover).toBeVisible()
   // Sharp enough for a 3x screen, and the whole 4:3 photo is kept (no square crop in the stored thumb)
   expect(await cover.evaluate(img => [img.naturalWidth, img.naturalHeight])).toEqual([640, 480])

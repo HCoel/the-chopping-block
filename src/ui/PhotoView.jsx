@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks'
 import { repo } from '../store.js'
+import { jpegSize, shouldTurn } from '../core/thumbs.js'
 import { useLive } from './useLive.js'
 
 export function useBlobUrl(record) {
@@ -16,14 +17,36 @@ export function useBlobUrl(record) {
   return url
 }
 
-export default function PhotoView({ id, alt = '', class: cls = 'photo', onClick }) {
-  const photo = useLive(() => repo.getPhoto(id), [id], null)
-  const url = useBlobUrl(photo)
-  return url ? <img class={cls} src={url} alt={alt} onClick={onClick} /> : <div class={`${cls} placeholder`} />
+// A 4:3 frame holding the photo, turned when shouldTurn says so
+function Framed({ record, slot, cls, alt, onClick }) {
+  const url = useBlobUrl(record)
+  if (!url) return <div class={`${cls} placeholder`} />
+  const turned = shouldTurn(slot, jpegSize(record.data))
+  return (
+    <div class={`${cls} frame`} onClick={onClick}>
+      <img class={turned ? 'turned' : ''} src={url} alt={alt} />
+    </div>
+  )
 }
 
-export function ThumbView({ id, alt = '' }) {
+export default function PhotoView({ id, slot, alt = '', class: cls = 'photo', onClick }) {
+  const photo = useLive(() => repo.getPhoto(id), [id], null)
+  return <Framed record={photo} slot={slot} cls={cls} alt={alt} onClick={onClick} />
+}
+
+export function ThumbView({ id, slot, alt = '' }) {
   const thumb = useLive(() => repo.getThumb(id), [id], null)
-  const url = useBlobUrl(thumb)
-  return url ? <img class="thumb" src={url} alt={alt} /> : <div class="thumb placeholder" />
+  return <Framed record={thumb} slot={slot} cls="thumb" alt={alt} />
+}
+
+// A just-picked photo not saved yet
+export function PendingThumbView({ thumb, slot }) {
+  return <Framed record={thumb} slot={slot} cls="thumb" alt="" />
+}
+
+// Full screen: the original orientation, which suits a portrait phone screen
+export function PlainPhoto({ id, alt = '', class: cls, onClick }) {
+  const photo = useLive(() => repo.getPhoto(id), [id], null)
+  const url = useBlobUrl(photo)
+  return url ? <img class={cls} src={url} alt={alt} onClick={onClick} /> : null
 }

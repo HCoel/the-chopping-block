@@ -15,6 +15,13 @@ export function jpegSize(buffer) {
   return null
 }
 
+// Portrait shots of an upright axe are shown turned clockwise, so every tile is a side-on axe
+// filling the 4:3 frame. Display only: stored photos are untouched. The stamp slot is never
+// turned, since a close-up of lettering would end up sideways.
+export function shouldTurn(slot, size) {
+  return Boolean(slot && slot !== 'stamp' && size && size.height > size.width)
+}
+
 // Rebuilds thumbnails smaller than `edge` from their full photos, one at a time to keep memory flat.
 // Thumbs have no updated_at, so this never shows up as "changes" for the next backup.
 // Resumable: rows already at size are skipped, and the meta flag is only set once every row is done.

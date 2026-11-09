@@ -1,20 +1,10 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useState } from 'preact/hooks'
 import { SLOTS } from '../core/db.js'
 import { processPhoto } from '../core/image.js'
 import { guard } from './toast.jsx'
-import { ThumbView } from './PhotoView.jsx'
+import { PendingThumbView, ThumbView } from './PhotoView.jsx'
 
 export const SLOT_LABELS = { profile: 'Profile', stamp: 'Stamp', extra: 'Extra' }
-
-function PendingThumb({ thumb }) {
-  const [url, setUrl] = useState(null)
-  useEffect(() => {
-    const u = URL.createObjectURL(new Blob([thumb.data], { type: thumb.type }))
-    setUrl(u)
-    return () => URL.revokeObjectURL(u)
-  }, [thumb])
-  return url ? <img class="thumb" src={url} alt="" /> : null
-}
 
 // existing: { [slot]: photoId } already saved. changes: { [slot]: undefined | null | { full, thumb } }.
 // Photos are processed on pick and only written when the form is saved, so cancelling leaves nothing behind.
@@ -44,9 +34,9 @@ export default function PhotoSlots({ existing, changes, onChange }) {
                 {busy === slot
                   ? <div class="thumb placeholder">…</div>
                   : change
-                    ? <PendingThumb thumb={change.thumb} />
+                    ? <PendingThumbView thumb={change.thumb} slot={slot} />
                     : hasPhoto
-                      ? <ThumbView id={existing[slot]} />
+                      ? <ThumbView id={existing[slot]} slot={slot} />
                       : <div class="thumb placeholder">＋</div>}
                 <span>{label}{slot === 'stamp' ? ' ★' : ''}</span>
                 <input type="file" accept="image/*" hidden aria-label={`${label} photo`} onChange={e => pick(slot, e)} />
